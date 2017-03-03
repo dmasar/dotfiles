@@ -1,0 +1,14 @@
+set nocompatible
+filetype indent plugin on
+syntax on
+
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+set expandtab
+set list
+set listchars=tab:>-,trail:~
+set autoindent
+
+execute pathogen#infect()
+
