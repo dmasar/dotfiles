@@ -41,7 +41,7 @@ values."
      ;;clojure
      ;;go
      org
-     magit-work
+     magit
      html
      helm
      ;,; ----------------------------------------------------------------
@@ -444,7 +444,10 @@ you should place your code here."
  '(markdown-command "pandoc")
  '(org-agenda-files (quote ("~/git/todo/todo.org")))
  '(org-confirm-babel-evaluate nil)
- '(org-export-backends (quote (ascii html icalendar latex man md texinfo))))
+ '(org-export-backends (quote (ascii html icalendar latex man md texinfo)))
+ '(package-selected-packages
+   (quote
+    (yapfify web-mode tagedit sql-indent slim-mode scss-mode sass-mode pyvenv pytest pyenv-mode py-isort pug-mode pip-requirements live-py-mode less-css-mode insert-shebang hy-mode helm-pydoc helm-css-scss helm-cscope xcscope haml-mode fish-mode emmet-mode dockerfile-mode docker tablist docker-tramp disaster cython-mode company-web web-completion-data company-shell company-c-headers company-anaconda command-log-mode cmake-mode clang-format anaconda-mode pythonic yaml-mode xterm-color ws-butler window-numbering which-key web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline smeargle shell-pop restart-emacs rainbow-delimiters quelpa popwin plantuml-mode persp-mode pcre2el paradox orgit org-projectile org-present org-pomodoro org-plus-contrib org-download org-bullets open-junk-file neotree multi-term move-text monokai-theme mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode linum-relative link-hint json-mode js2-refactor js-doc info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag graphviz-dot-mode google-translate golden-ratio gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gh-md flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help elisp-slime-nav dumb-jump diff-hl define-word company-tern company-statistics company-emacs-eclim column-enforce-mode coffee-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
