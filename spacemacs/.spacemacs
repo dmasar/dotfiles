@@ -37,6 +37,7 @@ values."
    dotspacemacs-configuration-layers
    '(
      clojure
+     ansible
      python
      javascript
      ;;clojure
