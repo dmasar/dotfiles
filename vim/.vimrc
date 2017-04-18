@@ -9,6 +9,7 @@ set expandtab
 set list
 set listchars=tab:>-,trail:~
 set autoindent
+set title
 
 
 execute pathogen#infect()
