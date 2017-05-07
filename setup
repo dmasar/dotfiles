@@ -1,7 +1,10 @@
 #!/bin/bash
 
 sudo apt update
+sudo apt upgrade
 
 sudo apt remove joe ed nano
 
-sudo apt install i3 stow compton vim
+sudo apt install i3 stow compton vim screen shellcheck
+
+sudo apt auto-remove

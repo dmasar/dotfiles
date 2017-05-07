@@ -1,7 +1,7 @@
-stow vim -v
-stow screenrc -v
-stow spacemacs -v
-stow vrapperrc -v
+stow vim -t $HOME -v
+stow screenrc -t $HOME -v
+stow spacemacs -t $HOME -v
+stow vrapperrc -t $HOME -v
 stow i3 -t $HOME -v
 stow i3status -t $HOME -v
 stow compton -t $HOME -v
