@@ -178,3 +178,5 @@ bar {
 
 font pango: Ubuntu Mono 10
 
+bindcode Mod1+23 workspace next
+bindcode Mod1+Shift+23 workspace prev
