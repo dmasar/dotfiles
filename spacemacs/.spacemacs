@@ -78,6 +78,7 @@ values."
      sql
      tabbar
      command-log
+     mu4e
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -334,6 +335,94 @@ before packages are loaded. If you are unsure, you should try in setting them in
 ;;  (setq tabbar-buffer-groups-function 'my-tabbar-buffer-groups)
   )
 
+(defvar custom-mu4e-pushed-mode nil)
+(defvar custom-mu4e-pushed-mode-ro nil)
+
+(defun custom-mu4e-compose-toggle-org-mode ()
+  (interactive)
+  (if (or (string-equal major-mode "mu4e-compose-mode")
+          (string-equal major-mode "mu4e-view-mode"))
+      (progn (setq custom-mu4e-pushed-mode major-mode)
+             (setq custom-mu4e-push-mode-ro buffer-read-only)
+             (org-mode))
+    (when (and (string-equal major-mode "org-mode")
+               (not (equal custom-mu4e-pushed-mode nil)))
+      (funcall custom-mu4e-pushed-mode)
+      (buffer-read-only custom-mu4e-push-mode-ro)
+      (setq custom-mu4e-push-ro nil))))
+
+(defun custom-mu4e-all-fields ()
+  (cl-loop for (header-type)
+           in mu4e-header-info
+           unless (or (string-equal (format "%s" header-type) ":human-date")
+                      (string-equal (format "%s" header-type) ":thread-subject")
+                      (string-equal (format "%s" header-type) ":from-or-to"))
+           collect header-type))
+
+(defun custom-mu4e-minimal-fields ()
+  '(:from :to :cc :subject :date :attachments))
+
+(defun custom-mu4e-middle-fields ()
+  '(:from :to :cc :bcc :subject :flags :date :maildir
+          :mailing-list :tags :attachments :signature
+          :decryption :size))
+
+(defun custom-mu4e-cycle-fields ()
+  (interactive)
+  (cond ((equal mu4e-view-fields (custom-mu4e-minimal-fields))
+         (setq mu4e-view-fields (custom-mu4e-middle-fields)))
+        ((equal mu4e-view-fields (custom-mu4e-middle-fields))
+         (setq mu4e-view-fields (custom-mu4e-all-fields)))
+        ((equal mu4e-view-fields (custom-mu4e-all-fields))
+         (setq mu4e-view-fields (custom-mu4e-minimal-fields)))))
+
+(defun custom-mu4e-init ()
+  ;;; mu4e configuration
+  (setq mu4e-get-mail-command "offlineimap -c ~/.offlineimap/.offlineimaprc"
+        mu4e-drafts-folder "/Drafts"
+        mu4e-sent-folder   "/Sent"
+        mu4e-trash-folder  "/Trash"
+        mu4e-maildir "~/.offlineimap/dmasar.gratex.com"
+        mu4e-maildir-shortcuts
+        '(("/INBOX"       . ?i)
+          ("/Sent"        . ?s)
+          ("/Trash"       . ?t)
+          ("/All Mail"    . ?a))
+        mu4e-attachment-dir "~/Downloads/attachments"
+        mu4e-headers-fields '( (:human-date    .   8)
+                               (:flags         .   4)
+                               (:from          .   15)
+                               (:subject       .   nil))
+        mu4e-headers-visible-columns 60
+        mu4e-view-fields (custom-mu4e-middle-fields)
+        mu4e-view-show-images t
+        mu4e-view-show-addresses t
+        mu4e~view-cited-hidden nil
+        mu4e~view-link-map t
+        mu4e~view-attach-map t
+        mu4e-compose-signature (concat "" "\n")
+        mu4e-compose-format-flowed t
+        mu4e-use-fancy-chars t
+        mu4e-split-view 'vertical)
+  (require 'smtpmail)
+  (setq
+        user-mail-address "dmasar@gratex.com"
+        user-full-name  "Daniel Masar"
+        message-send-mail-function 'smtpmail-send-it
+        message-kill-buffer-on-exit t
+        starttls-use-gnutls t
+        smtpmail-starttls-credentials '("mail2.gratex.com" 587 nil nil)
+        smtpmail-auth-credentials `(("mail2.gratex.com"
+                                     587
+                                     "dmasar"
+                                     ,(car (split-string (shell-command-to-string "gnome-keyring-query get hqdomainpwd")))))
+        smtpmail-default-smtp-server "mail2.gratex.com"
+        smtpmail-smtp-server "mail2.gratex.com"
+        smtpmail-smtp-service 587)
+  (when (fboundp 'imagemagick-register-types)
+    (imagemagick-register-types))
+  (set-face-attribute 'mu4e-replied-face nil :inherit 'default))
+
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
 This function is called at the very end of Spacemacs initialization after
@@ -341,6 +430,23 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
+
+  (eval-after-load 'mu4e
+    '(progn
+       (custom-mu4e-init)))
+
+  (add-hook 'mu4e-compose-mode-hook
+            (lambda ()
+              (local-set-key (kbd "C-c C-g") 'custom-mu4e-compose-toggle-org-mode)))
+
+  (add-hook 'mu4e-view-mode-hook
+            (lambda ()
+              (local-set-key (kbd "C-c C-g") 'custom-mu4e-compose-toggle-org-mode)))
+
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (local-set-key (kbd "C-c C-g") 'custom-mu4e-compose-toggle-org-mode)))
+
   (defun my-setup-indent (n)
     ;; java/c/c++
     (setq c-basic-offset (* 2 n))
@@ -359,6 +465,7 @@ you should place your code here."
     (setq web-mode-code-indent-offset n) ; web-mode, js code in html file
     (setq css-indent-offset n) ; css-mode
     )
+
   (defun my-tabbar-buffer-groups () ;; customize to show all normal files in one group
     "Returns the name of the tab group names the current buffer belongs to.
  There are two groups: Emacs buffers (those whose name starts with '*', plus
@@ -407,14 +514,23 @@ you should place your code here."
   (eval-after-load 'org
     (lambda () (add-to-list 'org-babel-load-languages '(shell . t))))
 
-  (org-babel-do-load-languages 'org-babel-load-languages
-                                '((shell . t)
-                                  (ditaa . t)
-                                  (maxima . t)
-                                  (plantuml . t)
-                                  (emacs-lisp . t)
-                                  (gnuplot . t)))
+  (eval-after-load 'org
+    (lambda () (add-to-list 'org-babel-load-languages '(bash . t))))
 
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)
+     (shell . t)
+     (gnuplot . t)
+     (C . t)
+     (sql . t)
+     (plantuml . t)
+     (ledger . t)
+     (ditaa . t)
+     (js t)
+     (clojure t)
+     ))
 
   (loop for key in '([up] [down] [left] [right]) do
         (global-unset-key key)
@@ -436,28 +552,6 @@ you should place your code here."
 (setq highlight-indent-guides-method 'character)
   )
 
-
-;; Do not write anything past this comment. This is where Emacs will
-;; auto-generate custom variable definitions.
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(markdown-command "pandoc")
- '(org-agenda-files (quote ("~/git/todo/todo.org")))
- '(org-confirm-babel-evaluate nil)
- '(org-export-backends (quote (ascii html icalendar latex man md texinfo)))
- '(package-selected-packages
-   (quote
-    (winum vimrc-mode powerline gntp skewer-mode simple-httpd parent-mode request gitignore-mode fringe-helper git-gutter+ git-gutter fuzzy pos-tip flx with-editor iedit anzu goto-chg undo-tree editorconfig json-snatcher json-reformat diminish dactyl-mode dash-functional tern company-ansible seq spinner pkg-info epl bind-map bind-key dash s auto-complete popup markdown-mode multiple-cursors avy packed eclim company smartparens highlight evil flycheck yasnippet helm helm-core alert log4e projectile magit magit-popup git-commit async hydra f js2-mode jinja2-mode clojure-snippets clj-refactor inflections edn paredit peg cider-eval-sexp-fu cider queue clojure-mode ansible-doc ansible yapfify web-mode tagedit sql-indent slim-mode scss-mode sass-mode pyvenv pytest pyenv-mode py-isort pug-mode pip-requirements live-py-mode less-css-mode insert-shebang hy-mode helm-pydoc helm-css-scss helm-cscope xcscope haml-mode fish-mode emmet-mode dockerfile-mode docker tablist docker-tramp disaster cython-mode company-web web-completion-data company-shell company-c-headers company-anaconda command-log-mode cmake-mode clang-format anaconda-mode pythonic yaml-mode xterm-color ws-butler window-numbering which-key web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline smeargle shell-pop restart-emacs rainbow-delimiters quelpa popwin plantuml-mode persp-mode pcre2el paradox orgit org-projectile org-present org-pomodoro org-plus-contrib org-download org-bullets open-junk-file neotree multi-term move-text monokai-theme mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode linum-relative link-hint json-mode js2-refactor js-doc info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag graphviz-dot-mode google-translate golden-ratio gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gh-md flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help elisp-slime-nav dumb-jump diff-hl define-word company-tern company-statistics company-emacs-eclim column-enforce-mode coffee-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(company-tooltip-common ((t (:inherit company-tooltip :weight bold :underline nil))))
- '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
 
 (defun dotspacemacs/emacs-custom-settings ()
   "Emacs custom settings.

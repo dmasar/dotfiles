@@ -1,8 +1,10 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhist_cnt =6
+let g:netrw_dirhist_cnt =8
 let g:netrw_dirhist_1='/home/dmasarux/git/spacemacs-org-gratex-md-backend'
 let g:netrw_dirhist_2='/home/dmasarux/git/jisup2/setup'
 let g:netrw_dirhist_3='/home/dmasarux/git/mvsr/mounts'
 let g:netrw_dirhist_4='/home/dmasarux/git/mv/bio/.git'
 let g:netrw_dirhist_5='/home/dmasar/git/upm2/sura-central/docker/upm2/blui'
 let g:netrw_dirhist_6='/home/dmasar/git/upm2/sura-pr'
+let g:netrw_dirhist_7='/home/dmasar/git/dotfiles'
+let g:netrw_dirhist_8='/home/dmasar/.offlineimap'
