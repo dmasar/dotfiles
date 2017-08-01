@@ -4,6 +4,8 @@ sudo apt update
 sudo apt upgrade
 sudo apt remove joe ed nano
 
+#curl https://nixos.org/nix/install | sh
+
 sudo apt install i3 stow compton vim screen shellcheck parallel tree gawk jq libxml2-utils htop vim-gnome id-utils exfat-fuse exfat-utils uniutils gettext xmlstarlet curl coreutils silversearcher-ag cifs-utils dos2unix smbclient nfs-common rsync
 
 sudo apt install offlineimap python-pip mu4e
