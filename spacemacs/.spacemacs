@@ -54,6 +54,7 @@ values."
      auto-completion
      ;; better-defaults
      emacs-lisp
+     common-lisp
      git
      ;; markdown
      (shell :variables
@@ -72,13 +73,13 @@ values."
      plantuml
      magit-work
      c-c++
-     java
-     org-gratex-html
+     (java :variables java-backend 'ensime)
      cscope
      sql
      tabbar
      command-log
      mu4e
+     ;;org-gratex-html
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -87,6 +88,8 @@ values."
    dotspacemacs-additional-packages '(
  ;;                                     highlight-indent-guides
                                       editorconfig
+                                      evil-mu4e
+                                      guix
                                       )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -379,6 +382,7 @@ before packages are loaded. If you are unsure, you should try in setting them in
 (defun custom-mu4e-init ()
   ;;; mu4e configuration
   (setq mu4e-get-mail-command "offlineimap -c ~/.offlineimap/.offlineimaprc"
+        mu4e-user-mail-address-list '("dmasar@gratex.com")
         mu4e-drafts-folder "/Drafts"
         mu4e-sent-folder   "/Sent"
         mu4e-trash-folder  "/Trash"
@@ -450,7 +454,7 @@ you should place your code here."
   (defun my-setup-indent (n)
     ;; java/c/c++
     (setq c-basic-offset (* 2 n))
-    (setq java-basic-offset (* 2 n))
+    (setq java-basic-offset (* 1 n))
     (setq lisp-basic-offset n)
     (setq sh-basic-offset (* 1 n))
     (setq sh-indentation (* 1 n))
@@ -466,21 +470,7 @@ you should place your code here."
     (setq css-indent-offset n) ; css-mode
     )
 
-  (defun my-tabbar-buffer-groups () ;; customize to show all normal files in one group
-    "Returns the name of the tab group names the current buffer belongs to.
- There are two groups: Emacs buffers (those whose name starts with '*', plus
- dired buffers), and the rest.  This works at least with Emacs v24.2 using
- tabbar.el v1.7."
-    (list (cond ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
-                ((eq major-mode 'dired-mode) "emacs")
-                ((eq major-mode 'term-mode) "term")
-                ;;              ((string-prefix-p "*ansi-term" (buffer-name)) "term")
-                ;;              ((string-prefix-p "org-src-" (buffer-name)) "emacs")
-                ((string-equal " " (substring (buffer-name) 0 1)) "emacs")
-                (t "user"))))
-
   (my-setup-indent 4)
-  (setq tabbar-use-images nil)
 
   (evil-set-initial-state 'multi-term 'emacs)
 
@@ -549,10 +539,11 @@ you should place your code here."
   (define-key evil-motion-state-map "gj" 'tabbar-forward-group)
   (define-key evil-motion-state-map "gk" 'tabbar-backward-group)
 
-(setq highlight-indent-guides-method 'character)
+  (setq highlight-indent-guides-method 'character)
+;;  (setq mu4e-html2text-command "w3m -T text/html")
+  (require 'mu4e-contrib)
+  (setq mu4e-html2text-command 'mu4e-shr2text)
   )
-
-
 (defun dotspacemacs/emacs-custom-settings ()
   "Emacs custom settings.
 This is an auto-generated function, do not modify its content directly, use
@@ -563,19 +554,14 @@ This function is called at the very end of Spacemacs initialization."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(markdown-command "pandoc")
- '(org-agenda-files (quote ("~/git/todo/todo.org")))
- '(org-confirm-babel-evaluate nil)
- '(org-export-backends (quote (ascii html icalendar latex man md texinfo)))
+ '(org-export-backends (quote (ascii html icalendar latex man md odt org)))
  '(package-selected-packages
    (quote
-    (meghanada editorconfig vimrc-mode dactyl-mode markdown-mode multiple-cursors avy packed eclim company smartparens highlight evil flycheck yasnippet helm helm-core alert log4e projectile magit magit-popup git-commit async hydra f js2-mode jinja2-mode clojure-snippets clj-refactor inflections edn paredit peg cider-eval-sexp-fu cider queue clojure-mode ansible-doc ansible yapfify web-mode tagedit sql-indent slim-mode scss-mode sass-mode pyvenv pytest pyenv-mode py-isort pug-mode pip-requirements live-py-mode less-css-mode insert-shebang hy-mode helm-pydoc helm-css-scss helm-cscope xcscope haml-mode fish-mode emmet-mode dockerfile-mode docker tablist docker-tramp disaster cython-mode company-web web-completion-data company-shell company-c-headers company-anaconda command-log-mode cmake-mode clang-format anaconda-mode pythonic yaml-mode xterm-color ws-butler window-numbering which-key web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline smeargle shell-pop restart-emacs rainbow-delimiters quelpa popwin plantuml-mode persp-mode pcre2el paradox orgit org-projectile org-present org-pomodoro org-plus-contrib org-download org-bullets open-junk-file neotree multi-term move-text monokai-theme mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode linum-relative link-hint json-mode js2-refactor js-doc info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag graphviz-dot-mode google-translate golden-ratio gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gh-md flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help elisp-slime-nav dumb-jump diff-hl define-word company-tern company-statistics company-emacs-eclim column-enforce-mode coffee-mode clean-aindent-mode auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell)))
- '(tabbar-separator (quote (0.5))))
+    (test-simple load-relative sbt-mode scala-mode eclim smartparens evil flycheck yasnippet helm helm-core markdown-mode magit cider clojure-mode dash sayid password-generator flycheck-bashate evil-lion slime-company slime common-lisp-snippets yapfify yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vimrc-mode vi-tilde-fringe uuidgen use-package toc-org tagedit symon string-inflection sql-indent spaceline smeargle slim-mode shell-pop scss-mode sass-mode restart-emacs realgud rainbow-delimiters pyvenv pytest pyenv-mode py-isort pug-mode popwin plantuml-mode pip-requirements persp-mode pcre2el paradox orgit org-projectile org-present org-pomodoro org-download org-bullets open-junk-file neotree multi-term mu4e-maildirs-extension mu4e-alert move-text monokai-theme mmm-mode meghanada markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint less-css-mode js2-refactor js-doc jinja2-mode insert-shebang info+ indent-guide hy-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-pydoc helm-purpose helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-css-scss helm-cscope helm-company helm-c-yasnippet helm-ag guix groovy-mode groovy-imports gradle-mode google-translate golden-ratio gnuplot gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gh-md fuzzy flycheck-pos-tip flx-ido fish-mode fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mu4e evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eshell-z eshell-prompt-extras esh-help ensime emmet-mode elisp-slime-nav editorconfig dumb-jump dockerfile-mode docker disaster diff-hl define-word dactyl-mode cython-mode company-web company-tern company-statistics company-shell company-emacs-eclim company-c-headers company-ansible company-anaconda command-log-mode column-enforce-mode coffee-mode cmake-mode clojure-snippets clj-refactor clean-aindent-mode clang-format cider-eval-sexp-fu browse-at-remote auto-yasnippet auto-highlight-symbol auto-compile ansible-doc ansible aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(company-tooltip-common ((t (:inherit company-tooltip :weight bold :underline nil))))
- '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
+ )
 )

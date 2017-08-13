@@ -8,3 +8,4 @@ stow compton -t $HOME -v
 stow xprofile -t $HOME -v
 stow xinitrc -t $HOME -v
 stow offlineimap -t $HOME -v
+stow xrandr -t $HOME -v

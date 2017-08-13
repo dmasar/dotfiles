@@ -1,0 +1,12 @@
+#!/bin/bash
+
+gtf 2560 1440 60.0
+gtf 1600 1200 60.0
+
+xrandr --newmode "2560x1440_60.00"  311.83  2560 2744 3024 3488  1440 1441 1444 1490  -HSync +Vsync
+#xrandr --newmode "1600x1200_60.00"  160.96 1600 1740 1880 2160 1200 1201 1204 1242   -HSync +Vsync
+#xrandr --addmode Virtual1 1600x1200_60.00
+#xrandr --output Virtual1 --mode 1600x1200_60.00
+xrandr --addmode Virtual1 2560x1440_60.00
+xrandr --output Virtual1 --mode 2560x1440_60.00
+
