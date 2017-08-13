@@ -1,3 +1,5 @@
+#!/bin/bash
+
 stow vim -t $HOME -v
 stow screenrc -t $HOME -v
 stow spacemacs -t $HOME -v
@@ -9,3 +11,6 @@ stow xprofile -t $HOME -v
 stow xinitrc -t $HOME -v
 stow offlineimap -t $HOME -v
 stow xrandr -t $HOME -v
+stow powerline -t $HOME -v
+
+echo "source ~/powerline.lib; export POWERLINE_MODULES=\"ssh:workdir:git:status\" #powerline load"

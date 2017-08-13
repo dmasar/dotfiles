@@ -19,3 +19,4 @@ sudo apt auto-remove
 pip install keyring
 
 mkdir -p ~/.offlineimap
+mkdir -p ~/opt

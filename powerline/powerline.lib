@@ -1,0 +1,335 @@
+#!/bin/bash
+
+#shellcheck disable=SC2155
+{
+if [[ "$TERM" == "xterm-256color" ]]; then
+    export PSCOLOR_BG_RED="$(tput setab 160)"
+    export PSCOLOR_FG_RED="$(tput setaf 160)"
+    export PSCOLOR_BG_GREEN="$(tput setab 28)"
+    export PSCOLOR_FG_GREEN="$(tput setaf 28)"
+    export PSCOLOR_BG_BLUE="$(tput setab 4)"
+    export PSCOLOR_FG_BLUE="$(tput setaf 4)"
+    export PSCOLOR_BG_DARK="$(tput setab 237)"
+    export PSCOLOR_FG_DARK="$(tput setaf 237)"
+    export PSCOLOR_BG_YELLOW="$(tput setab 216)"
+    export PSCOLOR_FG_YELLOW="$(tput setaf 216)"
+else
+    export PSCOLOR_BG_RED="$(tput setab 1)"
+    export PSCOLOR_FG_RED="$(tput setaf 1)"
+    export PSCOLOR_BG_GREEN="$(tput setab 2)"
+    export PSCOLOR_FG_GREEN="$(tput setaf 2)"
+    export PSCOLOR_BG_BLUE="$(tput setab 4)"
+    export PSCOLOR_FG_BLUE="$(tput setaf 4)"
+    export PSCOLOR_BG_DARK="$(tput setab 0)"
+    export PSCOLOR_FG_DARK="$(tput setaf 0)"
+    export PSCOLOR_BG_YELLOW="$(tput setab 3)"
+    export PSCOLOR_FG_YELLOW="$(tput setaf 3)"
+fi
+export PSCOLOR_BG_CYAN="$(tput setab 6)"
+export PSCOLOR_FG_CYAN="$(tput setaf 6)"
+export PSCOLOR_BG_WHITE="$(tput setab 7)"
+export PSCOLOR_FG_WHITE="$(tput setaf 7)"
+export PSCOLOR_BG_BLACK="$(tput setab 0)"
+export PSCOLOR_FG_BLACK="$(tput setaf 0)"
+}
+
+##### GIT MODULE #####
+__powerline_module_git_bg () {
+    printf "%s" "${PSCOLOR_BG_DARK}"
+}
+__powerline_module_git_fg () {
+    printf "%s" "${PSCOLOR_FG_WHITE}"
+}
+__powerline_module_git_s () {
+    printf "%s" "${PSCOLOR_FG_GREEN}"
+}
+__powerline_module_git_m () {
+    printf "%s" "${PSCOLOR_FG_CYAN}"
+}
+__powerline_module_git_u () {
+    printf "%s" "${PSCOLOR_FG_YELLOW}"
+}
+__powerline_module_git_c () {
+    printf "%s" "${PSCOLOR_FG_RED}"
+}
+#shellcheck disable=SC2155
+__powerline_module_git () {
+    local branch_name="$(git symbolic-ref --short HEAD 2> /dev/null || git rev-parse --short HEAD 2> /dev/null)"
+
+    [ -n "$branch_name" ] || return # git branch not found, probably not git folder
+
+#    local commit_hash="$(git rev-parse --short HEAD)"
+
+    echo -n "$(__powerline_module_git_bg)$(__powerline_module_git_fg) ${branch_name} "
+
+    local git_status="$(git status --porcelain --branch -uall)"
+    local git_ahead="$(echo -n "${git_status}" | grep -oP 'ahead \K[[:digit:]]+')"
+    if (( git_ahead > 0 )); then echo -n "⇡ ${git_ahead} "; fi
+
+    local git_behind="$(echo -n "${git_status}" | grep -oP 'behind \K[[:digit:]]+')"
+    if (( git_behind > 0 )); then echo -n "⇣ ${git_behind} "; fi
+
+    git_status="$(echo "${git_status}" | grep -v "^##")"
+    local git_staged=$(echo -n "${git_status}" | grep -c -v "^[?U ]")
+    if (( git_staged > 0 )); then printf "| $(__powerline_module_git_s)S:%s$(__powerline_module_git_fg) " "${git_staged}"; fi
+
+    local git_modified=$(echo -n "${git_status}" | grep -c -e "^[ MDA][MD]")
+    if (( git_modified > 0 )); then printf "| $(__powerline_module_git_m)M:%s$(__powerline_module_git_fg) " "${git_modified}"; fi
+
+    local git_untracked=$(echo -n "${git_status}" | grep -c -e "^??")
+    if (( git_untracked > 0 )); then printf "| $(__powerline_module_git_u)U:%s$(__powerline_module_git_fg) " "${git_untracked}"; fi
+
+    local git_conflicts=$(echo -n "${git_status}" | grep -c -e "^U")
+    if (( git_conflicts > 0 )); then printf "| $(__powerline_module_git_c)C:%s$(__powerline_module_git_fg) " "${git_conflicts}"; fi
+
+    tput sgr0
+}
+__powerline_help_git () {
+    echo "Module: git"
+    echo -n "    $(__powerline_module_git_bg)$(__powerline_module_git_fg) some/branch/name " #Current GIT branch
+    { #in group just for readibility
+        echo -n "⇡ 1 "
+        echo -n "⇣ 1 "
+        echo -n "| ${PSCOLOR_FG_GREEN}S:2$(__powerline_module_git_fg) "
+        echo -n "| ${PSCOLOR_FG_CYAN}M:3$(__powerline_module_git_fg) "
+        echo -n "| ${PSCOLOR_FG_YELLOW}U:4$(__powerline_module_git_fg) "
+        echo "| ${PSCOLOR_FG_RED}C:5$(__powerline_module_git_fg) "
+    }
+    tput sgr0
+#   some/branch/name ⇡ 1 ⇣ 1 | S:2 | M:3 | U:4 | C:5
+cat <<EOF
+    Current GIT branch |   |     |     |     |     |
+                       |   |     |     |     |     |
+  Number of commits ahead/behind |     |     |     |
+                              Staged   |     |     |
+                                   Modified  |     |
+                                         Untracked |
+                                               Conflicts
+EOF
+}
+
+##### STATUS MODULE #####
+__powerline_module_status_bg_0 () {
+    printf "%s" "${PSCOLOR_BG_GREEN}"
+}
+__powerline_module_status_bg_1 () {
+    printf "%s" "${PSCOLOR_BG_RED}"
+}
+__powerline_module_status_fg_0 () {
+    printf "%s" "${PSCOLOR_FG_WHITE}"
+}
+__powerline_module_status_fg_1 () {
+    printf "%s" "${PSCOLOR_FG_WHITE}"
+}
+__powerline_module_status () {
+    local exit_code="$1"
+    if ((exit_code==0)); then
+        echo -n "$(__powerline_module_status_bg_0)$(__powerline_module_status_fg_0) ${exit_code} "
+    else
+        echo -n "$(__powerline_module_status_bg_1)$(__powerline_module_status_fg_1) ${exit_code} "
+    fi
+}
+__powerline_help_status () {
+    echo "Module: status"
+    echo "    $(__powerline_module_status_bg_0)$(__powerline_module_status_fg_0) 0 $(tput sgr0) / $(__powerline_module_status_bg_1)$(__powerline_module_status_fg_1) 255 $(tput sgr0)"
+#    0  /  255
+    cat <<EOF
+    Exit code of the last executed process
+EOF
+}
+
+##### WORKDIR MODULE #####
+__powerline_module_workdir_bg () {
+    printf "%s" "${PSCOLOR_BG_BLUE}"
+}
+__powerline_module_workdir_fg () {
+    printf "%s" "${PSCOLOR_FG_WHITE}"
+}
+__powerline_module_workdir () {
+    echo -n "$(__powerline_module_workdir_bg)$(__powerline_module_workdir_fg) \w "
+}
+__powerline_help_workdir () {
+    echo "Module: workdir"
+    echo "    $(__powerline_module_workdir_bg)$(__powerline_module_workdir_fg) ~/git/app $(tput sgr0)"
+    cat <<EOF
+    Current working directory
+EOF
+}
+
+##### CAK INCEPTION MODULE #####
+__powerline_module_cakinception_bg () {
+    printf "%s" "${PSCOLOR_BG_YELLOW}"
+}
+__powerline_module_cakinception_fg () {
+    printf "%s" "${PSCOLOR_FG_BLACK}"
+}
+__powerline_module_cakinception () {
+    if [[ ! -z $CAK_INCEPTION ]] ; then
+        echo -n "$(__powerline_module_cakinception_bg)$(__powerline_module_cakinception_fg) $CAK_INCEPTION "
+    fi
+}
+__powerline_help_cakinception () {
+    echo "Module: cakinception"
+    echo "    $(__powerline_module_cakinception_bg)$(__powerline_module_cakinception_fg) ~/git/app $(tput sgr0)"
+    cat <<EOF
+    Shows level of cak inception. For more information type TODO =cak inception -h=
+EOF
+}
+
+##### PROJECT MODULE #####
+__powerline_module_project_helper_git_mainline () {
+    local currentbranch
+    currentbranch="$(git rev-parse --abbrev-ref HEAD)"
+
+    local mainline
+    if [[ "$currentbranch" == */main ]] ;then
+        mainline=$(echo "$currentbranch" | sed 's#/main$##')
+    else
+        mainline=$(echo "$currentbranch" | sed -E 's#/(feature|fix|chr|docupdate|refactor|maintenance|review)/[a-zA-Z0-9_\.=<>'"'"'-]+$##')
+    fi
+
+    printf "%s" "$mainline"
+}
+__powerline_module_project_bg_0 () {
+    printf "%s" "${PSCOLOR_BG_BLUE}"
+}
+__powerline_module_project_bg_1 () {
+    printf "%s" "${PSCOLOR_BG_RED}"
+}
+__powerline_module_project_bg_2 () {
+    printf "%s" "${PSCOLOR_BG_BLACK}"
+}
+__powerline_module_project_fg_0 () {
+    printf "%s" "${PSCOLOR_FG_WHITE}"
+}
+__powerline_module_project_fg_1 () {
+    printf "%s" "${PSCOLOR_FG_WHITE}"
+}
+__powerline_module_project_fg_2 () {
+    printf "%s" "${PSCOLOR_FG_YELLOW}"
+}
+__powerline_module_project () {
+    if ! [ -n "${GDF_LOCAL_APP}" ]; then
+        return
+    fi
+
+    #shellcheck disable=SC2155
+    local project_path="$(pwd)"
+    local prefix="${GDF_LOCAL_PATH}"
+
+    if [[ "$project_path" == "$prefix"* ]] && \
+       [[ "${GDF_GIT_MAINLINE}" == "$(__powerline_module_project_helper_git_mainline)" ]]; then
+        echo -n "$(__powerline_module_project_bg_0)$(__powerline_module_project_fg_0) ${GDF_LOCAL_APP^^} "
+    else
+        echo -n "$(__powerline_module_project_bg_1)$(__powerline_module_project_fg_1) !${GDF_LOCAL_APP^^}! "
+    fi
+
+    if [[ -v "GDF_ENV" ]]; then
+        echo -n "| env:$GDF_ENV "
+    fi
+
+    if [[ -v "GDF_LOCAL_SUFFIX" ]]; then
+        echo -n "| suffix:$GDF_LOCAL_SUFFIX "
+    fi
+
+    echo -n "| $GDF_LOCAL_TST_WS_USR@$GDF_TEST_HOST_PORT "
+
+    if [[ -n "$DOCKER_HOST" ]]; then
+        if [[ ${CAK_POWERLINE_SIGNAL_WRONG_DOCKER} == "1" ]] ; then
+            echo -n "$(__powerline_module_project_bg_1)$(__powerline_module_project_fg_2) docker:$DOCKER_HOST "
+        else
+            echo -n "$(__powerline_module_project_bg_2)$(__powerline_module_project_fg_2) docker:$DOCKER_HOST "
+        fi
+    fi
+}
+__powerline_help_project () {
+    echo "Module: project"
+    echo "    $(__powerline_module_project_bg_0)$(__powerline_module_project_fg_0) APP | env:env/local | suffix:dev/bl | @http://app.local:7001 "
+    tput sgr0
+#   APP | env:env/local | @http://app.local:7001
+    cat <<EOF
+Application name  |                   |
+         Current environment          |
+                                      |
+                           Application host port
+EOF
+}
+
+##### SSH MODULE #####
+__powerline_module_ssh_bg () {
+    printf "%s" "${PSCOLOR_BG_BLACK}"
+}
+__powerline_module_ssh_fg () {
+    printf "%s" "${PSCOLOR_FG_YELLOW}"
+}
+__powerline_module_ssh () {
+    if [[ -n "$SSH_CLIENT" ]] || [[ -n "${SSH_TTY}" ]]; then
+        echo -n "$(__powerline_module_ssh_bg)$(__powerline_module_ssh_fg) ssh: \h "
+    fi
+}
+__powerline_help_ssh () {
+    echo "Module: ssh"
+    echo "    $(__powerline_module_ssh_bg)$(__powerline_module_ssh_fg) ssh: hostname $(tput sgr0)"
+    cat <<EOF
+    Shows only if you are connected via ssh.
+    Dispalys name of connected host
+EOF
+}
+
+##### POWERLINE PS #####
+#shellcheck disable=SC2155
+__powerline_ps () {
+    local exit_code="$?"
+
+    PS1=""
+    for module in ${POWERLINE_MODULES//:/ }; do
+        if [[ "$module" == "status" ]]; then
+            PS1+="$(__powerline_module_status ${exit_code})"
+        else
+            PS1+="$(__powerline_module_"${module}")"
+        fi
+    done
+
+    PS1+="$(tput sgr0)\n$ "
+
+    echo -ne "\033]0;$GDF_LOCAL_APP $GDF_ENV\007"
+
+    export PS1
+}
+
+__powerline_install () {
+    sed -i "/#powerline load$/d" "${HOME}/.bashrc"
+    pushd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null
+    SCRIPTPATH=$(pwd -P)
+    popd > /dev/null
+    cat <<EOF >> ${HOME}/.bashrc
+source ${SCRIPTPATH}/powerline.lib; export POWERLINE_MODULES="ssh:workdir:git:status" #powerline load
+EOF
+}
+
+if [[ -e /usr/share/terminfo/x/xterm+256color ]]; then
+    export TERM='xterm-256color'
+fi
+
+if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+    echo "Powerline:"
+    echo "    Library sets PROMPT_COMMAND, which prints defined modules."
+    echo "    Default modules are:"
+    echo "      POWERLINE_MODULES=\"workdir:git:project:status\""
+    echo "    To install this prompt as your default prompt use '-i' or '--install'"
+    echo ""
+    echo "## AVAILABLE MODULES ##"
+    while read pl_help; do
+        "$pl_help"
+        echo ""
+    done < <(declare -F | sort | grep -oP ".*\K__powerline_help.*")
+elif [[ "$1" == "-i" || "$1" == "--install" ]]; then
+    __powerline_install
+else
+    if [[ "$1" != "-k" ]]; then
+        export POWERLINE_MODULES="ssh:workdir:git:project:cakinception:status"
+    fi
+    PROMPT_COMMAND=__powerline_ps
+fi
+
+unset __powerline_install
