@@ -18,5 +18,14 @@ sudo apt auto-remove
 # support for keyring for offlineimap
 pip install keyring
 
+# for emacs & org
+# nice table with table
+pip install tabletext
+# nice ascii tables with graph-easy
+sudo apt install cpanminus 
+sudo cpanm Graph::Easy
+# maxima
+sudo apt install maxima
+
 mkdir -p ~/.offlineimap
 mkdir -p ~/opt
